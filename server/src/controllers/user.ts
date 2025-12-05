@@ -6,7 +6,7 @@ function getUserProfile(req: Request, res: Response) {
     const user = req.user;
     if (!user) return res.status(401).json({ message: 'Unauthorized Meow' });
 
-    return res.json({ user });
+    return res.status(200).json({ user });
 }
 
 export { getUserProfile };

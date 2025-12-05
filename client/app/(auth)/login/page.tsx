@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login, register } from '@/lib/api';
-import { saveToken } from '@/lib/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,10 +19,15 @@ export default function LoginPage() {
 
     try {
       const fn = mode === 'login' ? login : register;
-      const data = await fn(email, password);
-      saveToken(data.token);
+      const res = await fn(email, password);
+      if (!res.ok) {
+        setError(res.message || 'Something went wrong');
+        return;
+      }
+      console.log('Authentication successful');
       router.push('/');
     } catch (err : unknown) {
+      console.error('Authentication error:', err);
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);

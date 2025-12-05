@@ -2,36 +2,37 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMe } from '@/lib/api';
-import { getToken, clearToken } from '@/lib/auth';
+import { getMe, logout } from '@/lib/api';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const token = getToken();
-    if (!token) {
+useEffect( () => {
+  async function fetchData() {
+    try {
+      const res = await getMe();
+      if (!res.ok) throw new Error(res.message);
+      setUserEmail(res.data.user.email); // res.data.email = res.data.user.email because data = { user }
+      console.log('User data fetched:', res.data);
+    } catch {
       router.push('/login');
-      return;
     }
+    finally{
+      setLoading(false);
+    }}
+  fetchData();
+}, [router]);
 
-    async function fetchUser() {
-      try {
-        if (!token) throw new Error('No token');
-        const data = await getMe(token);
-        setUserEmail(data.user.email);
-      } catch (err) {
-        clearToken();
-        router.push('/login');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUser();
-  }, [router]);
+const handleLogout = async () => {
+  try {
+    await logout();
+    router.push('/login');
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
+}
 
   if (loading) return <p>Loading...</p>;
 
@@ -40,10 +41,7 @@ export default function DashboardPage() {
       <h1>Dashboard</h1>
       <p>Welcome, {userEmail}</p>
       <button
-        onClick={() => {
-          clearToken();
-          router.push('/login');
-        }}
+        onClick={() => handleLogout()}
         style={{
           marginTop: 16,
           padding: 8,

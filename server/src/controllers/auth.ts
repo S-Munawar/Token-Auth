@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import type { Request, Response } from 'express';
 import users from '@/config/db';
-import {createToken} from '@/utils/jwt';
+import {createToken, sendTokenAsCookie} from '@/utils/jwt';
 import { User } from '@/types/user';
 
 
@@ -26,7 +26,8 @@ async function Register(req: Request, res: Response) {
   users.push(newUser);
 
   const token =  createToken(newUser);
-  return res.status(201).json({ message: 'User created', token });
+  sendTokenAsCookie(res, token);
+  return res.status(201).json({ message: 'User created' });
 };
 
 // Login
@@ -36,15 +37,22 @@ async function Login(req: Request, res: Response) {
 
   const user = users.find(u => u.email === email);
   if (!user)
-    return res.status(400).json({ message: 'Invalid credentials' });
+    return res.json({ message: 'Invalid credentials' });
 
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch)
-    return res.status(400).json({ message: 'Invalid credentials' });
-
+    return res.json({ message: 'Invalid credentials' });
   const token = createToken(user);
-  return res.json({ message: 'Logged in', token });
+  sendTokenAsCookie(res, token);
+  return res.status(200).json({ message: 'Logged in' });
 };
 
+// Logout
+async function Logout(req: Request, res: Response) {
+  console.log('Logout endpoint hit');
+  res.clearCookie('auth_token');
+  return res.status(200).json({ message: 'Logged out' });
+}
 
-export { Register, Login };
+
+export { Register, Login, Logout };

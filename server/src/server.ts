@@ -5,6 +5,7 @@ import cors from 'cors';
 import authRoutes from '@/routes/auth';
 import userRoutes from '@/routes/user';
 import type { Response } from 'express';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 dotenv.config(); // Load environment variables from .env file
@@ -15,6 +16,7 @@ app.use(cors({ // Whats cors? = Cross-Origin Resource Sharing, a mechanism to al
   credentials: true,
 }));
 app.use(express.json()); // Middleware to parse JSON bodies to JS objects
+app.use(cookieParser()); // Middleware to parse cookies
 
 app.get('/', (_, res: Response) => {
   console.log('Root endpoint hit');

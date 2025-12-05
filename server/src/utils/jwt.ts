@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import type { Response } from 'express';
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET!;
@@ -16,4 +17,15 @@ function verifyToken(token: string) {
   return jwt.verify(token, JWT_SECRET);
 }
 
-export { createToken, verifyToken };
+function sendTokenAsCookie(res: Response, token: string) {
+    console.log('Cookie sent');
+  return res.cookie('auth_token', token, {
+    httpOnly: true, // Prevents JS access (XSS protection)
+    secure: process.env.COOKIE_SECURE === 'production', // Only send over HTTPS in production
+    sameSite: 'lax', // Protect against CSRF(Cross-Site Request Forgery)
+    maxAge: 3600000, // 1 hour
+  });
+
+}
+
+export { createToken, verifyToken, sendTokenAsCookie };
