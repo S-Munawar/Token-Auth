@@ -48,7 +48,7 @@ async function Login(req: Request, res: Response) {
 };
 
 // Logout
-async function Logout(req: Request, res: Response) {
+async function Logout(res: Response) {
   console.log('Logout endpoint hit');
   res.clearCookie('auth_token');
   return res.status(200).json({ message: 'Logged out' });
